@@ -111,3 +111,11 @@ migrate-kit down --num 5
 - [ ] PostgreSQL support
 
 - [ ] SQLite support
+
+- [ ] Migration locking (Prevent multiple instances from running migrations at the same time)
+
+- [ ] Checksum validation (Detect if a migration file changed after being applied)
+
+- [ ] Dry run mode
+
+- [ ] Migration status / history
