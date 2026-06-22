@@ -52,6 +52,7 @@ export class PostgresqlDatabase implements Database {
 	async close(): Promise<void> {
 		try {
 			this.client?.release();
+			await this.pool.end();
 		} catch {}
 	}
 
