@@ -1,5 +1,5 @@
 import sql from "mssql";
-import type { Database, Transaction, SqlResult, SqlRecord } from "../database.js";
+import type { Database, Transaction, SqlResult, SqlRecord, Queryable } from "../database.js";
 import type { Config } from "../../config/config.js";
 import { SqlValue } from "../sql_value.js";
 import type { SqlParam } from "../sql_param.js";
@@ -22,11 +22,15 @@ export declare class SqlServerDatabase implements Database {
     /**
      * Executes sql query
      * @param {string} sqlQuery
-     * @param {SqlParam} params
      * @returns {Promise<SqlServerResult>}
      */
-    query(sqlQuery: string, params?: SqlParam): Promise<SqlServerResult>;
-    transaction(): Transaction;
+    query(sqlQuery: string): Promise<SqlServerResult>;
+    /**
+     * Performs sql operations inside a transaction
+     * @param {(database: SqlServerDatabase) => Promise<void>} callback
+     * @returns {Promise<any>}
+     */
+    transaction(callback: (database: Queryable) => Promise<void>): Promise<any>;
     /**
      * Initializes migration table if not found
      */

@@ -1,36 +1,25 @@
-import sql from "mssql";
-import type {
-	Database,
-	Transaction,
-	SqlResult,
-	SqlRecord,
-	Queryable
-} from "../database.js";
+import pg from "pg";
+import type { Database, SqlResult, SqlRecord, Queryable } from "../database.js";
 import type { Config } from "../../config/config.js";
 import { SqlValue } from "../sql_value.js";
-import type { SqlParam } from "../sql_param.js";
 import type { Migration } from "../../migrations/index.js";
 
-export class SqlServerDatabase implements Database {
-	pool: sql.ConnectionPool;
+export class PostgresqlDatabase implements Database {
+	pool: pg.Pool;
+	client: pg.PoolClient | undefined;
 	config: Config;
 
 	constructor(config: Config) {
 		this.config = config;
-		this.pool = new sql.ConnectionPool({
+		this.pool = new pg.Pool({
+			host: this.config.database.host,
 			user: this.config.database.user,
 			password: this.config.database.password,
 			database: this.config.database.database,
-			server: this.config.database.host,
-			pool: {
-				max: 1,
-				min: 0,
-				idleTimeoutMillis: 30000
-			},
-			options: {
-				encrypt: false,
-				trustServerCertificate: true
-			}
+			max: 1,
+			idleTimeoutMillis: 30000,
+			connectionTimeoutMillis: 2000,
+			maxLifetimeSeconds: 60
 		});
 	}
 
@@ -41,7 +30,7 @@ export class SqlServerDatabase implements Database {
 	 */
 	async connect(): Promise<this> {
 		try {
-			this.pool = await this.pool.connect();
+			this.client = await this.pool.connect();
 			return this;
 		} catch (err: unknown) {
 			const errorPrefix = "connecting database";
@@ -62,65 +51,57 @@ export class SqlServerDatabase implements Database {
 	 */
 	async close(): Promise<void> {
 		try {
-			await this.pool.close();
+			this.client?.release();
 		} catch {}
 	}
 
 	/**
 	 * Executes sql query
 	 * @param {string} sqlQuery
-	 * @returns {Promise<SqlServerResult>}
+	 * @returns {Promise<PostgresqlResult>}
 	 */
-	async query(sqlQuery: string): Promise<SqlServerResult> {
-		const request = new sql.Request(this.pool);
+	async query(sqlQuery: string): Promise<PostgresqlResult> {
+		if (this.client === undefined) throw Error("client was undefined");
 
-		/*
-		if (params) {
-			for (const [key, value] of Object.entries(params)) {
-				request.input(key, value);
-			}
-		}
-		*/
-
-		return new SqlServerResult(await request.query(sqlQuery));
+		return new PostgresqlResult(await this.client.query(sqlQuery));
 	}
 
 	/**
 	 * Performs sql operations inside a transaction
-	 * @param {(database: SqlServerDatabase) => Promise<void>} callback
+	 * @param {(database: PostgresqlDatabase) => Promise<any>} callback
 	 * @returns {Promise<any>}
 	 */
 	async transaction(
-		callback: (database: Queryable) => Promise<void>
+		callback: (database: Queryable) => Promise<any>
 	): Promise<any> {
-		let transaction = new SqlServerTransaction(this.pool);
+		if (this.client === undefined) throw Error("client was undefined");
 
 		try {
-			transaction = await transaction.begin();
+			await this.client.query("BEGIN");
 
-			await callback(transaction);
+			const res = await callback(this.client);
 
-			await transaction.commit();
+			await this.client.query("COMMIT");
+
+			return res;
 		} catch (err: any) {
-			await transaction.rollback();
-			throw Error(`performing sql server transaction: ${err.message}`);
+			await this.client.query("ROLLBACK");
+			throw Error(`performing postgres transaction: ${err.message}`);
 		}
 	}
 
 	/**
 	 * Initializes migration table if not found
+	 * @returns {Promise<void>}
 	 */
 	async initMigrationTable(): Promise<void> {
 		try {
 			await this.query(`
-				IF OBJECT_ID('dbo.migrations', 'U') IS NULL
-				BEGIN
-					CREATE TABLE dbo.migrations (
-						id INT IDENTITY(1,1) PRIMARY KEY,
-						name VARCHAR(255) NOT NULL UNIQUE,
-						time_stamp DATETIMEOFFSET(7) NOT NULL DEFAULT SYSDATETIMEOFFSET()
-					);
-				END
+				CREATE TABLE IF NOT EXISTS migrations (
+					id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+					name VARCHAR(255) NOT NULL UNIQUE,
+					time_stamp TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+				);
 			`);
 		} catch (err: unknown) {
 			const errorPrefix = "initializing migration table";
@@ -228,64 +209,7 @@ export class SqlServerDatabase implements Database {
 	}
 }
 
-export class SqlServerTransaction implements Transaction {
-	private transaction: sql.Transaction;
-
-	constructor(pool: sql.ConnectionPool) {
-		this.transaction = new sql.Transaction(pool);
-	}
-
-	/**
-	 * Begin a transaction
-	 * @returns {Promise<this>}
-	 */
-	async begin(): Promise<this> {
-		await this.transaction.begin();
-		return this;
-	}
-
-	/**
-	 * Commit a transaction
-	 * @returns {Promise<this>}
-	 */
-	async commit(): Promise<void> {
-		await this.transaction.commit();
-	}
-
-	/**
-	 * Rollback a transaction
-	 * @returns {Promise<this>}
-	 */
-	async rollback(): Promise<void> {
-		try {
-			await this.transaction.rollback();
-		} catch {}
-	}
-
-	/**
-	 * Executes a query inside a transaction
-	 * Automatically rollback transaction on error
-	 * @returns {Promise<this>}
-	 */
-	async query(sqlQuery: string, params?: SqlParam): Promise<SqlResult> {
-		try {
-			const request = new sql.Request(this.transaction);
-
-			if (params) {
-				for (const [key, value] of Object.entries(params)) {
-					request.input(key, value);
-				}
-			}
-
-			return new SqlServerResult(await request.query(sqlQuery));
-		} catch (err: unknown) {
-			this.rollback();
-			throw err;
-		}
-	}
-}
-
-export class SqlServerRecord implements SqlRecord {
+export class PostgresqlRecord implements SqlRecord {
 	raw: any;
 
 	constructor(record: any) {
@@ -301,12 +225,12 @@ export class SqlServerRecord implements SqlRecord {
 	}
 }
 
-export class SqlServerResult implements SqlResult {
-	private result: sql.IResult<any> | undefined;
+export class PostgresqlResult implements SqlResult {
+	private result: pg.QueryResult<any> | undefined;
 	private isOk: boolean;
 	private err: Error | undefined;
 
-	constructor(result: sql.IResult<any> | Error) {
+	constructor(result: pg.QueryResult<any> | Error) {
 		if (result instanceof Error) {
 			this.isOk = false;
 			this.err = result;
@@ -324,9 +248,9 @@ export class SqlServerResult implements SqlResult {
 		return this.err;
 	}
 
-	rows(): SqlServerRecord[] {
+	rows(): PostgresqlRecord[] {
 		if (!this.result) throw Error("result was no ok");
-		return this.result.recordset.map((v) => new SqlServerRecord(v));
+		return this.result.rows.map((v) => new PostgresqlRecord(v));
 	}
 
 	length(): number {

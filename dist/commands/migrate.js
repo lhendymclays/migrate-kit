@@ -50,27 +50,24 @@ export async function up(options) {
     try {
         await db.connect();
         await db.initMigrationTable();
-        const tsx = db.transaction();
         const [migrations, files] = await Promise.all([
             db.loadMigrationTableMap(),
             loadUpMigrationFiles(inputOptions.dir)
         ]);
-        await tsx.begin();
-        // Migrations
-        for (const fileName of files) {
-            if (migrations.has(fileName)) {
-                console.log(`Skipping migration: ${fileName}`);
-                continue;
+        await db.transaction(async (client) => {
+            // Migrations
+            for (const fileName of files) {
+                if (migrations.has(fileName)) {
+                    console.log(`Skipping migration: ${fileName}`);
+                    continue;
+                }
+                const filePath = path.join(inputOptions.dir, fileName);
+                const file = fs.readFileSync(filePath, { encoding: "utf-8" });
+                console.log(file);
+                await client.query(file);
+                await client.query(`INSERT INTO migrations (name) VALUES ('${fileName.replace(".up.sql", "")}')`);
             }
-            const filePath = path.join(inputOptions.dir, fileName);
-            const file = fs.readFileSync(filePath, { encoding: "utf-8" });
-            console.log(file);
-            await tsx.query(file);
-            await tsx.query("INSERT INTO migrations (name) VALUES (@name)", {
-                name: fileName.replace(".up.sql", "")
-            });
-        }
-        await tsx.commit();
+        });
         console.log("All Migrations Complete !!");
     }
     catch (err) {
@@ -104,39 +101,38 @@ export async function down(options) {
     try {
         await db.connect();
         await db.initMigrationTable();
-        const tsx = db.transaction();
         const [migrations, files] = await Promise.all([
             db.loadMigrationTableArray(),
             loadDownMigrationFiles(inputOptions.dir)
         ]);
-        await tsx.begin();
-        // Migrations
-        if (inputOptions.all) {
-            throw Error("all command not implemented");
-        }
-        else {
-            for (let i = 0; i < inputOptions.num; i++) {
-                if (migrations.length === 0) {
-                    continue;
-                }
-                if (i >= migrations.length) {
-                    throw Error("exceeded migration length");
-                }
-                const migration = migrations[i];
-                const fileName = migration.name + ".down.sql";
-                const filePath = path.join(inputOptions.dir, fileName);
-                if (!files.some((f) => f === fileName)) {
-                    throw Error("down migration file not found");
-                }
-                const file = fs.readFileSync(filePath, { encoding: "utf-8" });
-                console.log(file);
-                await tsx.query(file);
-                await tsx.query("DELETE FROM migrations WHERE name = @name", {
-                    name: fileName.replace(".down.sql", "")
-                });
+        await db.transaction(async (client) => {
+            // Migrations
+            if (inputOptions.all) {
+                throw Error("all command not implemented");
             }
-        }
-        await tsx.commit();
+            else {
+                for (let i = 0; i < inputOptions.num; i++) {
+                    if (migrations.length === 0) {
+                        continue;
+                    }
+                    if (i >= migrations.length) {
+                        throw Error("exceeded migration length");
+                    }
+                    const migration = migrations[i];
+                    const fileName = migration.name + ".down.sql";
+                    const filePath = path.join(inputOptions.dir, fileName);
+                    if (!files.some((f) => f === fileName)) {
+                        throw Error("down migration file not found");
+                    }
+                    const file = fs.readFileSync(filePath, {
+                        encoding: "utf-8"
+                    });
+                    console.log(file);
+                    await client.query(file);
+                    await client.query(`DELETE FROM migrations WHERE name = '${fileName.replace(".down.sql", "")}'`);
+                }
+            }
+        });
         console.log("All Migrations Complete !!");
     }
     catch (err) {

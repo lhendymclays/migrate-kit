@@ -1,6 +1,7 @@
 import { SqlServerDatabase } from "./adapters/microsoft_sql_server.js";
 import type { Config } from "../config/config.js";
 import type { Database } from "./database.js";
+import { PostgresqlDatabase } from "./adapters/postgresql.js";
 
 /**
  * Database adapter factory
@@ -11,6 +12,8 @@ export function createDatabase(config: Config): Database {
 	switch (config.driver) {
 		case "mssql":
 			return new SqlServerDatabase(config);
+		case "pg":
+			return new PostgresqlDatabase(config);
 		default:
 			throw new Error(`Unsupported DB driver: ${config.driver}`);
 	}

@@ -2,11 +2,15 @@ import type { Migration } from "../migrations/index.js";
 import type { SqlParam } from "./sql_param.js";
 import type { SqlValue } from "./sql_value.js";
 
+export interface Queryable {
+	query(sql: string): Promise<SqlResult>;
+}
+
 export interface Database {
 	connect(): Promise<this>;
 	close(): Promise<void>;
-	query(sql: string, params?: SqlParam): Promise<SqlResult>;
-	transaction(): Transaction;
+	query(sql: string): Promise<SqlResult>;
+	transaction(callback: (client: Queryable) => Promise<void>): Promise<void>;
 	initMigrationTable(): Promise<void>;
 	loadMigrationTableMap(): Promise<Map<string, Migration>>;
 	loadMigrationTableArray(): Promise<Migration[]>;
