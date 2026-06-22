@@ -28,7 +28,7 @@ pnpm add -g migrate-kit
 
 ✅ Microsoft SQL Server
 
-🚧 PostgreSQL (coming soon)
+✅ PostgreSQL
 
 🚧 SQLite (coming soon)
 
@@ -108,7 +108,7 @@ migrate-kit down --num 5
 
 - [x] Microsoft SQL Server support
 
-- [ ] PostgreSQL support
+- [x] PostgreSQL support
 
 - [ ] SQLite support
 
