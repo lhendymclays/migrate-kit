@@ -44,6 +44,7 @@ export class PostgresqlDatabase {
     async close() {
         try {
             this.client?.release();
+            await this.pool.end();
         }
         catch { }
     }
