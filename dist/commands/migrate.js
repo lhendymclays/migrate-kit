@@ -57,7 +57,7 @@ export async function up(options) {
         await db.transaction(async (client) => {
             // Migrations
             for (const fileName of files) {
-                if (migrations.has(fileName)) {
+                if (migrations.has(fileName.replace(".up.sql", ""))) {
                     console.log(`Skipping migration: ${fileName}`);
                     continue;
                 }
