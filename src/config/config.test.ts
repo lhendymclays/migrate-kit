@@ -34,7 +34,7 @@ suite("Create migration file", function () {
 		const password = "database_password";
 		const database = "database_name";
 
-		const options = loadOptions({
+		const options = await loadOptions({
 			dir,
 			driver,
 			host,
@@ -70,7 +70,7 @@ suite("Create migration file", function () {
 		const filePath = path.join(tmpDir, ".env");
 		writeFileSync(filePath, fileData);
 
-		const options = loadOptions({ env: filePath });
+		const options = await loadOptions({ env: filePath });
 
 		expect(options.dir).toBe(dir);
 		expect(options.driver).toBe(driver);
@@ -103,7 +103,7 @@ suite("Create migration file", function () {
 		const filePath = path.join(tmpDir, "migratekit.config.cjs");
 		writeFileSync(filePath, fileData);
 
-		const options = loadOptions({ config: filePath });
+		const options = await loadOptions({ config: filePath });
 
 		expect(options.dir).toBe(dir);
 		expect(options.driver).toBe(driver);

@@ -55,7 +55,7 @@ export async function up(options: any): Promise<void> {
 	}
 	const inputOptions = parseRes.data;
 
-	const config = loadOptions(inputOptions);
+	const config = await loadOptions(inputOptions);
 	const db = createDatabase(config);
 
 	try {
@@ -115,7 +115,7 @@ export async function down(options: any): Promise<void> {
 	}
 	const inputOptions = parseRes.data;
 
-	const config = loadOptions(inputOptions);
+	const config = await loadOptions(inputOptions);
 	const db = createDatabase(config);
 
 	try {
