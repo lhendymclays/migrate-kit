@@ -2,6 +2,8 @@ import { createRequire } from "node:module";
 import path from "node:path";
 import z from "zod";
 import dotenv from "dotenv";
+import { DefaultAzureCredential } from "@azure/identity";
+import { SecretClient } from "@azure/keyvault-secrets";
 const require = createRequire(import.meta.url);
 /**
  * Schema for config cjs file
@@ -32,7 +34,7 @@ const envSchema = z.object({
  * @returns {Promise<Config>}
  * @throws {Error}
  */
-export function loadOptions(opts) {
+export async function loadOptions(opts) {
     try {
         let dir = "migrations";
         let driver = "mssql";
@@ -59,6 +61,12 @@ export function loadOptions(opts) {
             user = config.database.user ?? user;
             password = config.database.password ?? password;
             database = config.database.database ?? database;
+        }
+        // Azure key vault
+        if (opts.azureKeyVaultUrl) {
+            const keyvault = await loadAzureKeyVault(opts.azureKeyVaultUrl);
+            user = keyvault.username;
+            password = keyvault.password;
         }
         // Cli
         if (opts.dir)
@@ -137,4 +145,24 @@ function loadConfig(filePath) {
         throw Error(z.prettifyError(parseRes.error));
     }
     return parseRes.data;
+}
+/**
+ * Loads azure key vault
+ * @param {string} vaulUrl
+ * @returns {Config}
+ */
+async function loadAzureKeyVault(vaulUrl) {
+    const credential = new DefaultAzureCredential();
+    const secretClient = new SecretClient(vaulUrl, credential);
+    const [usernameSecret, passwordSecret] = await Promise.all([
+        secretClient.getSecret("postgresql-username"),
+        secretClient.getSecret("postgresql-password")
+    ]);
+    const username = usernameSecret.value;
+    const password = passwordSecret.value;
+    if (!username)
+        throw new Error("postgres username was noy found in key vault");
+    if (!password)
+        throw new Error("postgres username was noy found in key vault");
+    return { username, password };
 }

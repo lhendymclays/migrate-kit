@@ -14,7 +14,10 @@ export class PostgresqlDatabase {
             max: 1,
             idleTimeoutMillis: 30000,
             connectionTimeoutMillis: 2000,
-            maxLifetimeSeconds: 60
+            maxLifetimeSeconds: 60,
+            ssl: {
+                rejectUnauthorized: false
+            }
         });
     }
     /**

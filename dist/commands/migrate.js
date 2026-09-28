@@ -9,8 +9,9 @@ import { loadDownMigrationFiles, loadUpMigrationFiles } from "../migrations/inde
  */
 const upOptionsSchema = z.object({
     env: z.string().optional(),
-    driver: z.string().optional(),
     config: z.string().optional(),
+    azureKeyVaultUrl: z.string().optional(),
+    driver: z.string().optional(),
     host: z.string().optional(),
     user: z.string().optional(),
     password: z.string().optional(),
@@ -22,8 +23,9 @@ const upOptionsSchema = z.object({
  */
 const downOptionsSchema = z.object({
     env: z.string().optional(),
-    driver: z.string().optional(),
     config: z.string().optional(),
+    azureKeyVaultUrl: z.string().optional(),
+    driver: z.string().optional(),
     host: z.string().optional(),
     user: z.string().optional(),
     password: z.string().optional(),
@@ -45,7 +47,7 @@ export async function up(options) {
         throw Error(z.prettifyError(parseRes.error));
     }
     const inputOptions = parseRes.data;
-    const config = loadOptions(inputOptions);
+    const config = await loadOptions(inputOptions);
     const db = createDatabase(config);
     try {
         await db.connect();
@@ -96,7 +98,7 @@ export async function down(options) {
         throw Error(z.prettifyError(parseRes.error));
     }
     const inputOptions = parseRes.data;
-    const config = loadOptions(inputOptions);
+    const config = await loadOptions(inputOptions);
     const db = createDatabase(config);
     try {
         await db.connect();

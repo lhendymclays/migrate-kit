@@ -1,7 +1,8 @@
 export type InputOptions = {
     env?: string;
-    driver?: string;
     config?: string;
+    azureKeyVaultUrl?: string;
+    driver?: string;
     host?: string;
     user?: string;
     password?: string;
@@ -23,5 +24,5 @@ export type Config = {
  * @returns {Promise<Config>}
  * @throws {Error}
  */
-export declare function loadOptions(opts: InputOptions): Config;
+export declare function loadOptions(opts: InputOptions): Promise<Config>;
 //# sourceMappingURL=config.d.ts.map
