@@ -42,7 +42,7 @@ const configSchema = z.object({
 		user: z.string(),
 		password: z.string(),
 		database: z.string(),
-		ssl: z.boolean().default(false)
+		ssl: z.coerce.boolean().default(false)
 	})
 });
 
@@ -56,7 +56,7 @@ const envSchema = z.object({
 	DB_USER: z.string(),
 	DB_PASSWORD: z.string(),
 	DB_DATABASE: z.string(),
-	DB_SSL: z.boolean().default(false)
+	DB_SSL: z.coerce.boolean().default(false)
 });
 
 /**
