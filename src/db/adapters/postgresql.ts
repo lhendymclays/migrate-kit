@@ -20,9 +20,7 @@ export class PostgresqlDatabase implements Database {
 			idleTimeoutMillis: 30000,
 			connectionTimeoutMillis: 2000,
 			maxLifetimeSeconds: 60,
-			ssl: {
-				rejectUnauthorized: false
-			}
+			ssl: config.database.ssl ? { rejectUnauthorized: false } : false
 		});
 	}
 

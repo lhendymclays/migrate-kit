@@ -27,6 +27,7 @@ export type Config = {
 		user: string;
 		password: string;
 		database: string;
+		ssl: boolean;
 	};
 };
 
@@ -40,7 +41,8 @@ const configSchema = z.object({
 		host: z.string(),
 		user: z.string(),
 		password: z.string(),
-		database: z.string()
+		database: z.string(),
+		ssl: z.boolean().default(false)
 	})
 });
 
@@ -53,7 +55,8 @@ const envSchema = z.object({
 	DB_HOST: z.string(),
 	DB_USER: z.string(),
 	DB_PASSWORD: z.string(),
-	DB_DATABASE: z.string()
+	DB_DATABASE: z.string(),
+	DB_SSL: z.boolean().default(false)
 });
 
 /**
@@ -69,6 +72,7 @@ export async function loadOptions(opts: InputOptions): Promise<Config> {
 		let user = "";
 		let password = "";
 		let database = "";
+		let ssl = false;
 
 		// Env File
 		if (opts.env) {
@@ -81,6 +85,7 @@ export async function loadOptions(opts: InputOptions): Promise<Config> {
 			user = env.database.user ?? user;
 			password = env.database.password ?? password;
 			database = env.database.database ?? database;
+			ssl = env.database.ssl ?? ssl;
 		}
 
 		// .config.cjs file
@@ -94,6 +99,7 @@ export async function loadOptions(opts: InputOptions): Promise<Config> {
 			user = config.database.user ?? user;
 			password = config.database.password ?? password;
 			database = config.database.database ?? database;
+			ssl = config.database.ssl ?? ssl;
 		}
 
 		// Azure key vault
@@ -119,7 +125,8 @@ export async function loadOptions(opts: InputOptions): Promise<Config> {
 				host,
 				user,
 				password,
-				database
+				database,
+				ssl
 			}
 		};
 	} catch (err: unknown) {
@@ -159,7 +166,8 @@ function loadEnv(filePath: string) {
 			host: parseRes.data.DB_HOST,
 			user: parseRes.data.DB_USER,
 			password: parseRes.data.DB_PASSWORD,
-			database: parseRes.data.DB_DATABASE
+			database: parseRes.data.DB_DATABASE,
+			ssl: parseRes.data.DB_SSL
 		}
 	};
 }

@@ -15,7 +15,8 @@ const configSchema = z.object({
         host: z.string(),
         user: z.string(),
         password: z.string(),
-        database: z.string()
+        database: z.string(),
+        ssl: z.boolean().default(false)
     })
 });
 /**
@@ -27,7 +28,8 @@ const envSchema = z.object({
     DB_HOST: z.string(),
     DB_USER: z.string(),
     DB_PASSWORD: z.string(),
-    DB_DATABASE: z.string()
+    DB_DATABASE: z.string(),
+    DB_SSL: z.boolean().default(false)
 });
 /**
  * Loads config details
@@ -42,6 +44,7 @@ export async function loadOptions(opts) {
         let user = "";
         let password = "";
         let database = "";
+        let ssl = false;
         // Env File
         if (opts.env) {
             const env = loadEnv(opts.env);
@@ -51,6 +54,7 @@ export async function loadOptions(opts) {
             user = env.database.user ?? user;
             password = env.database.password ?? password;
             database = env.database.database ?? database;
+            ssl = env.database.ssl ?? ssl;
         }
         // .config.cjs file
         if (opts.config) {
@@ -61,6 +65,7 @@ export async function loadOptions(opts) {
             user = config.database.user ?? user;
             password = config.database.password ?? password;
             database = config.database.database ?? database;
+            ssl = config.database.ssl ?? ssl;
         }
         // Azure key vault
         if (opts.azureKeyVaultUrl) {
@@ -88,7 +93,8 @@ export async function loadOptions(opts) {
                 host,
                 user,
                 password,
-                database
+                database,
+                ssl
             }
         };
     }
@@ -124,7 +130,8 @@ function loadEnv(filePath) {
             host: parseRes.data.DB_HOST,
             user: parseRes.data.DB_USER,
             password: parseRes.data.DB_PASSWORD,
-            database: parseRes.data.DB_DATABASE
+            database: parseRes.data.DB_DATABASE,
+            ssl: parseRes.data.DB_SSL
         }
     };
 }

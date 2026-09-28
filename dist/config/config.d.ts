@@ -17,6 +17,7 @@ export type Config = {
         user: string;
         password: string;
         database: string;
+        ssl: boolean;
     };
 };
 /**
