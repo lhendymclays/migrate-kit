@@ -45,6 +45,9 @@ export async function loadOptions(opts) {
         let password = "";
         let database = "";
         let ssl = false;
+        if (opts.debug) {
+            console.log("debug", opts);
+        }
         // Env File
         if (opts.env) {
             const env = loadEnv(opts.env);

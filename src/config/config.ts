@@ -75,6 +75,10 @@ export async function loadOptions(opts: InputOptions): Promise<Config> {
 		let database = "";
 		let ssl = false;
 
+		if (opts.debug) {
+			console.log("debug", opts);
+		}
+
 		// Env File
 		if (opts.env) {
 			const env = loadEnv(opts.env);
