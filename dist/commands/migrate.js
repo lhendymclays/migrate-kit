@@ -16,7 +16,8 @@ const upOptionsSchema = z.object({
     user: z.string().optional(),
     password: z.string().optional(),
     database: z.string().optional(),
-    dir: z.string()
+    dir: z.string(),
+    debug: z.coerce.boolean().default(false)
 });
 /**
  * Schema for cli options for down migration
@@ -32,7 +33,8 @@ const downOptionsSchema = z.object({
     database: z.string().optional(),
     dir: z.string(),
     num: z.coerce.number(),
-    all: z.coerce.boolean()
+    all: z.coerce.boolean(),
+    debug: z.coerce.boolean().default(false)
 });
 /**
  * Performs up migrations

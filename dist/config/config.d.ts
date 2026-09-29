@@ -8,6 +8,7 @@ export type InputOptions = {
     password?: string;
     database?: string;
     dir?: string;
+    debug?: boolean;
 };
 export type Config = {
     driver: string;

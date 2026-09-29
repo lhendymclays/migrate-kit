@@ -17,6 +17,7 @@ export type InputOptions = {
 	password?: string;
 	database?: string;
 	dir?: string;
+	debug?: boolean;
 };
 
 export type Config = {
@@ -118,7 +119,7 @@ export async function loadOptions(opts: InputOptions): Promise<Config> {
 		if (opts.password) password = opts.password;
 		if (opts.database) database = opts.database;
 
-		return {
+		const options = {
 			driver,
 			dir,
 			database: {
@@ -129,6 +130,12 @@ export async function loadOptions(opts: InputOptions): Promise<Config> {
 				ssl
 			}
 		};
+
+		if (opts.debug) {
+			console.log("debug", options);
+		}
+
+		return options;
 	} catch (err: unknown) {
 		const errorPrefix = "loading options";
 
@@ -216,9 +223,9 @@ async function loadAzureKeyVault(vaulUrl: string): Promise<{
 	const password = passwordSecret.value;
 
 	if (!username)
-		throw new Error("postgres username was noy found in key vault");
+		throw new Error("postgres username was not found in key vault");
 	if (!password)
-		throw new Error("postgres username was noy found in key vault");
+		throw new Error("postgres password was not found in key vault");
 
 	return { username, password };
 }

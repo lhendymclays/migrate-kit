@@ -86,7 +86,7 @@ export async function loadOptions(opts) {
             password = opts.password;
         if (opts.database)
             database = opts.database;
-        return {
+        const options = {
             driver,
             dir,
             database: {
@@ -97,6 +97,10 @@ export async function loadOptions(opts) {
                 ssl
             }
         };
+        if (opts.debug) {
+            console.log("debug", options);
+        }
+        return options;
     }
     catch (err) {
         const errorPrefix = "loading options";
@@ -168,8 +172,8 @@ async function loadAzureKeyVault(vaulUrl) {
     const username = usernameSecret.value;
     const password = passwordSecret.value;
     if (!username)
-        throw new Error("postgres username was noy found in key vault");
+        throw new Error("postgres username was not found in key vault");
     if (!password)
-        throw new Error("postgres username was noy found in key vault");
+        throw new Error("postgres password was not found in key vault");
     return { username, password };
 }
