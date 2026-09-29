@@ -29,6 +29,7 @@ program
     .option("--password <database_password>", "Database Password")
     .option("--database <database_name>", "Database Name")
     .option("--dir <migration_folder>", "Migration Folder", "migrations")
+    .option("--azure-key-vault <url>", "Azure key vault url")
     .option("--debug", "Enable Debug Logging", false)
     .action((options) => {
     up(options);
@@ -46,6 +47,7 @@ program
     .option("--database <database_name>", "Database Name")
     .option("--dir <migration_folder>", "Migration Folder", "migrations")
     .option("--num <number>", "Number Of down migrations", "1")
+    .option("--azure-key-vault <url>", "Azure key vault url")
     .option("--all", "Run all down migrations", false)
     .option("--debug", "Enable Debug Logging", false)
     .action((options) => {
