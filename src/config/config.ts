@@ -10,7 +10,7 @@ const require = createRequire(import.meta.url);
 export type InputOptions = {
 	env?: string;
 	config?: string;
-	azureKeyVaultUrl?: string;
+	azureKeyVault?: string;
 	driver?: string;
 	host?: string;
 	user?: string;
@@ -108,8 +108,8 @@ export async function loadOptions(opts: InputOptions): Promise<Config> {
 		}
 
 		// Azure key vault
-		if (opts.azureKeyVaultUrl) {
-			const keyvault = await loadAzureKeyVault(opts.azureKeyVaultUrl);
+		if (opts.azureKeyVault) {
+			const keyvault = await loadAzureKeyVault(opts.azureKeyVault);
 
 			user = keyvault.username;
 			password = keyvault.password;

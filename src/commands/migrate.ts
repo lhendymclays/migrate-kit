@@ -15,7 +15,7 @@ import {
 const upOptionsSchema = z.object({
 	env: z.string().optional(),
 	config: z.string().optional(),
-	azureKeyVaultUrl: z.string().optional(),
+	azureKeyVault: z.string().optional(),
 	driver: z.string().optional(),
 	host: z.string().optional(),
 	user: z.string().optional(),
@@ -31,7 +31,7 @@ const upOptionsSchema = z.object({
 const downOptionsSchema = z.object({
 	env: z.string().optional(),
 	config: z.string().optional(),
-	azureKeyVaultUrl: z.string().optional(),
+	azureKeyVault: z.string().optional(),
 	driver: z.string().optional(),
 	host: z.string().optional(),
 	user: z.string().optional(),

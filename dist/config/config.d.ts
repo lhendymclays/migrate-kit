@@ -1,7 +1,7 @@
 export type InputOptions = {
     env?: string;
     config?: string;
-    azureKeyVaultUrl?: string;
+    azureKeyVault?: string;
     driver?: string;
     host?: string;
     user?: string;

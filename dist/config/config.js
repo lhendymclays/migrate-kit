@@ -71,8 +71,8 @@ export async function loadOptions(opts) {
             ssl = config.database.ssl ?? ssl;
         }
         // Azure key vault
-        if (opts.azureKeyVaultUrl) {
-            const keyvault = await loadAzureKeyVault(opts.azureKeyVaultUrl);
+        if (opts.azureKeyVault) {
+            const keyvault = await loadAzureKeyVault(opts.azureKeyVault);
             user = keyvault.username;
             password = keyvault.password;
         }
