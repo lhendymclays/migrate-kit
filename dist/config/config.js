@@ -171,9 +171,9 @@ async function loadAzureKeyVault(vaulUrl) {
     ]);
     const username = usernameSecret.value;
     const password = passwordSecret.value;
-    if (!username)
+    if (!username || username === "")
         throw new Error("postgres username was not found in key vault");
-    if (!password)
+    if (!password || password === "")
         throw new Error("postgres password was not found in key vault");
     return { username, password };
 }

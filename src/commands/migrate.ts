@@ -132,7 +132,27 @@ export async function down(options: any): Promise<void> {
 		await db.transaction(async (client) => {
 			// Migrations
 			if (inputOptions.all) {
-				throw Error("all command not implemented");
+				for (let i = 0; i < migrations.length; i++) {
+					const migration = migrations[i];
+					const fileName = migration.name + ".down.sql";
+
+					const filePath = path.join(inputOptions.dir, fileName);
+
+					if (!files.some((f) => f === fileName)) {
+						throw Error("down migration file not found");
+					}
+
+					const file = fs.readFileSync(filePath, {
+						encoding: "utf-8"
+					});
+
+					console.log(file);
+
+					await client.query(file);
+					await client.query(
+						`DELETE FROM migrations WHERE name = '${fileName.replace(".down.sql", "")}'`
+					);
+				}
 			} else {
 				for (let i = 0; i < inputOptions.num; i++) {
 					if (migrations.length === 0) {
