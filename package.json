@@ -5,7 +5,7 @@
 	"description": "Database migration tooling",
 	"author": "Lewis Hendy",
 	"license": "MIT",
-	"packageManager": "pnpm@12.6.0",
+	"packageManager": "pnpm@12.11.2",
 	"keywords": [
 		"migration",
 		"migrations",
@@ -32,20 +32,20 @@
 	},
 	"devDependencies": {
 		"@types/mssql": "^12.3.0",
-		"@types/node": "^26.6.3",
+		"@types/node": "^26.6.5",
 		"@types/pg": "^8.23.1",
 		"tsx": "^4.23.15",
 		"typescript": "^7.0.2",
-		"vitest": "^5.0.2"
+		"vitest": "^5.0.4"
 	},
 	"dependencies": {
-		"@azure/identity": "^4.13.3",
+		"@azure/identity": "^4.14.0",
 		"@azure/keyvault-secrets": "^4.11.2",
 		"commander": "^15.0.0",
-		"dotenv": "^18.0.4",
-		"mssql": "^12.7.2",
-		"pg": "^8.23.0",
-		"zod": "^4.6.5"
+		"dotenv": "^18.0.8",
+		"mssql": "^12.7.7",
+		"pg": "^8.23.1",
+		"zod": "^4.6.7"
 	},
 	"bin": {
 		"migrate-kit": "dist/cli.js"

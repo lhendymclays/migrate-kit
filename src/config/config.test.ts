@@ -112,4 +112,23 @@ suite("Create migration file", function () {
 		expect(options.database.password).toBe(password);
 		expect(options.database.database).toBe(database);
 	});
+
+	test("loads DB_SSL=false from env file as false", async function () {
+		const filePath = path.join(tmpDir, ".env");
+
+		writeFileSync(
+			filePath,
+			[
+				"DB_HOST=localhost",
+				"DB_USER=test_user",
+				"DB_PASSWORD=test_password",
+				"DB_DATABASE=test_database",
+				"DB_SSL=false"
+			].join("\n")
+		);
+
+		const options = await loadOptions({ env: filePath });
+
+		expect(options.database.ssl).toBe(false);
+	});
 });

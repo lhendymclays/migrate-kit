@@ -29,7 +29,7 @@ const envSchema = z.object({
     DB_USER: z.string(),
     DB_PASSWORD: z.string(),
     DB_DATABASE: z.string(),
-    DB_SSL: z.coerce.boolean().default(false)
+    DB_SSL: z.stringbool().default(false)
 });
 /**
  * Loads config details
